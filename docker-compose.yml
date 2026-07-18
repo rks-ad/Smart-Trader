@@ -7,13 +7,13 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     environment:
-      POSTGRES_DB: mlmdb
-      POSTGRES_USER: mlmuser
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-mlmpassword}   # Use Dokploy env var
+      POSTGRES_DB: fpldb-advik
+      POSTGRES_USER: fplpsdb
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}   # Ensure this is set in Dokploy environment
     expose:
       - "5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U mlmuser -d mlmdb"]
+      test: ["CMD-SHELL", "pg_isready -U fplpsdb -d fpldb-advik"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -35,7 +35,7 @@ services:
       dockerfile: Dockerfile
     restart: unless-stopped
     volumes:
-      - ./backend:/app                    # Keep for now (or remove in pure prod)
+      - ./backend:/app                    
       - static_files:/app/staticfiles
       - media_files:/app/media
     env_file:
@@ -84,7 +84,7 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-      args:                                   # ← Critical for Vite production build
+      args:                                   
         VITE_API_URL: https://ds.finviral.com
         VITE_WS_URL: wss://ds.finviral.com
     restart: unless-stopped
@@ -102,7 +102,6 @@ services:
     restart: unless-stopped
     expose:
       - "80"
-    # NO "ports: 80:80" — Dokploy Traefik handles external 80/443
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - static_files:/var/www/static
@@ -110,7 +109,6 @@ services:
     depends_on:
       - backend
       - frontend
-    # Dokploy will auto-inject Traefik labels when you add domain via UI
 
 volumes:
   postgres_data:
